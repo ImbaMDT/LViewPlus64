@@ -34,12 +34,12 @@ private:
 
 	// Process related
 	HANDLE                      hProcess = NULL;
-	DWORD                       pid      = 0;
+	DWORD						pid      = 0;
 	HWND                        hWindow  = NULL;
 							   
 	// Memory related		   
 	DWORD_PTR                   moduleBaseAddr    = 0;
-	DWORD64                       moduleSize        = 0;
+	DWORD                       moduleSize        = 0;
 	BOOL                        is64Bit           = FALSE;
 
 private:
@@ -55,6 +55,7 @@ private:
 	void                        ReadMissiles(MemSnapshot& snapshot);
 	void                        ReadTurrets(MemSnapshot& snapshot);
 	void                        ReadMinimap(MemSnapshot& snapshot);
+	void                        GetMousePos(MemSnapshot& snapshot);
 	void                        FindPlayerChampion(MemSnapshot& snapshot);
 	void                        ClearMissingObjects(MemSnapshot& snapshot);
 	void                        FindHoveredObject(MemSnapshot& ms);

@@ -47,6 +47,7 @@ public:
 	SpellSlot         slot;
 	SummonerSpellType summonerSpellType;
 	int               level = 0;
+	int               ammo = 0;
 	float             readyAt = 0.f;
 	float             value = 0.f;
 	float			  timeCharge = 0.f;

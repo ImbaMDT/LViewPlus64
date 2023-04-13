@@ -38,6 +38,7 @@ struct MemSnapshot {
 	float                                         gameTime = 0.f;
 	int											  ping = 0;
 	bool										  isChatOpen = false;
+	Vector3										  mousePos;
 
 	/* Stuff about the map the players are currently on */
 	std::shared_ptr<MapObject>                    map;

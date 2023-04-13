@@ -3,7 +3,6 @@ from commons.utils import *
 from commons.skills import *
 from commons.items import *
 from commons.targeting import *
-from commons.ByPrediction import *
 import json, time, math
 
 LViewPlus64_script_info = {

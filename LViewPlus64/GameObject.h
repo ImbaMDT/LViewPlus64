@@ -23,6 +23,8 @@ class GameObject: MemoryLoadable, SpellInterface {
 
 public:
 	void                  LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad = true);
+
+	uint64_t			  get_ai_address(DWORD64 base, HANDLE hProcess, bool deepLoad = true);
 				          
 	bool                  HasUnitTags(const UnitTag& type1) const;
 				          
@@ -73,8 +75,8 @@ public:
 	bool				  isDashing;
 	bool				  dIsMoving;
 	Vector3				  dashPos;
-	Vector3 navBegin;
-	Vector3 navEnd;
+	Vector3				  navBegin;
+	Vector3				  navEnd;
 
 	bool                  isVisible;
 	bool                  isAlive;
@@ -89,11 +91,21 @@ public:
 	std::string           name;
 	Vector3               position;
 
+	Vector3               ai_navBegin;
+	Vector3               ai_navEnd;
+	DWORD64               ai_currentDashSpeed;
+	DWORD64               currentTargetPosition;
+	DWORD64               currentSegment;
+	bool                  ai_isMoving;
+	bool                  ai_isDashing;
+	float                 velocity;
+	Vector3               serverPos;
+
 	high_resolution_clock::time_point timeSinceLastPreviousPosition;
 	Vector3               previousPosition;
 				          
-	DWORD64                 networkId;
-	DWORD64                 address;
+	DWORD64               networkId;
+	DWORD64               address;
 				          
 	UnitInfo*             unitInfo = GameData::UnknownUnit;
 						 
@@ -122,13 +134,13 @@ public:
 	Spell                 D = Spell(SpellSlot::D);
 	Spell                 F = Spell(SpellSlot::F);
 				          
-	DWORD64                 level;
+	DWORD64               level;
 	ItemSlot              itemSlots[7];
 
 	std::vector<BuffInstance> buffVector;
 
 private:		         
-	static DWORD64          spellSlotPointerBuffer[7];
+	static DWORD64        spellSlotPointerBuffer[7];
 	static BYTE           itemListBuffer[0x100];
 
 	// Spell related stuff

@@ -223,8 +223,11 @@ def LViewPlus64_update(game, ui):
     ui.begin("Object Viewer")
 
     ui.dragfloat("time", game.time)
-    ui.dragfloat("chat", game.isChatOpen)
+    ui.dragint("chat", game.isChatOpen)
     ui.dragint("ping", game.ping)
+#    ui.dragfloat("mousePos", game.mousePos)
+    ui.labeltext("mousePos", f"x={game.mousePos.x:.2f}, y={game.mousePos.y:.2f}, z={game.mousePos.z:.2f}")
+
     if game.hovered_obj:
         ui.labeltext(
             "hovered_obj", f"{game.hovered_obj.name} ({hex(game.hovered_obj.address)})"
@@ -244,3 +247,10 @@ def LViewPlus64_update(game, ui):
     draw_list("Others", game.others, ui, draw_game_object)
 
     ui.end()
+
+
+    for obj in game.minions:
+        if game.is_point_on_screen(obj.pos):
+            navBegin = game.world_to_screen(obj.navBegin)
+            navEnd = game.world_to_screen(obj.navEnd)
+            game.draw_line(Vec2(navBegin.x, navBegin.y), Vec2(navEnd.x, navEnd.y), 2, Color.YELLOW)

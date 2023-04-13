@@ -127,19 +127,21 @@ void Input::ClipMouse(float x, float y) {
 
 void Input::ClickAt(bool leftClick, float x, float y)
 {
-	BlockInput(true);
 	POINT oldPos;
 	GetCursorPos(&oldPos);
+	BlockInput(true);
 	ClipMouse(x, y);
 	Move(x, y);
 	leftClick ? PressLeftClick() : PressRightClick();
 	Sleep(3);
 	ClipCursor(NULL);
-
+	Move(oldPos.x, oldPos.y);
+/*
 	if (GetAsyncKeyState(VK_RBUTTON) || GetAsyncKeyState(VK_LBUTTON)) {
-		Sleep(5);
+		Sleep(3);
 		Move(oldPos.x, oldPos.y);
 	}
+	*/
 	BlockInput(false);
 }
 

@@ -35,6 +35,7 @@ public:
 	static int ObjSpellBook;
 	static int ObjTransformation;
 	static int ObjName;
+	static int PlayerName;
 	static int ObjLvl;
 	static int ObjExpiry;
 	static int ObjCrit;
@@ -54,6 +55,10 @@ public:
 	static int ObjAdditionalApMulti;
 	static int ObjManaRegen;
 	static int ObjHealthRegen;
+
+	static int Ping;
+	static int OffPing;
+	static int ShowPing;
 
 	static int Chat;
 	static int ChatIsOpen;
@@ -92,6 +97,7 @@ public:
 
 	static int SpellSlotLevel;
 	static int SpellSlotTime;
+	static int SpellSlotAmmo;
 	static int SpellSlotCharges;
 	static int SpellSlotTimeCharge;
 	static int SpellSlotDamage;
@@ -137,6 +143,7 @@ public:
 	static int MinimapHudPos;
 	static int MinimapHudSize;
 
+	static int AiManager;
 	static int AiManagerStartPath;
 	static int AiManagerEndPath;
 	static int AiManagerTargetPosition;
@@ -144,6 +151,8 @@ public:
 	static int AiManagerIsDashing;
 	static int AiManagerCurrentSegment;
 	static int AiManagerDashSpeed;
+	static int ServerPos;
+	static int Velocity;
 
 	static int ObjNavPath1;
 	static int ObjNavPath10;
@@ -153,5 +162,5 @@ public:
 	static int ObjGreyHealth;
 	static int ObjTime;
 	static int ObjZombie;
-	static int HudInstance;
+	static int HudInstance; // maybe for going back to mouse pos
 };

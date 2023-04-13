@@ -86,6 +86,7 @@ void LeagueMemoryReader::FindHoveredObject(MemSnapshot& ms) {
 		ms.hoveredObject = nullptr;
 }
 
+
 ///		This method reads the game objects from memory. It reads the tree structure of a std::map<int, GameObject*>
 /// in this std::map reside Champions, Minions, Turrets, Missiles, Jungle mobs etc. Basically non static objects.
 void LeagueMemoryReader::ReadChamps(MemSnapshot& ms) {
@@ -93,7 +94,6 @@ void LeagueMemoryReader::ReadChamps(MemSnapshot& ms) {
 	high_resolution_clock::time_point readTimeBegin;
 	duration<float, std::milli> readDuration;
 	readTimeBegin = high_resolution_clock::now();
-
 	ms.champions.clear();
 	ms.others.clear();
 
@@ -157,7 +157,7 @@ void LeagueMemoryReader::ReadMinions(MemSnapshot& ms) {
 	readDuration = high_resolution_clock::now() - readTimeBegin;
 	ms.benchmark->readObjectsMs = readDuration.count();
 }
-/*
+
 void LeagueMemoryReader::ReadMissiles(MemSnapshot& ms) {
 	high_resolution_clock::time_point readTimeBegin;
 	duration<float, std::milli> readDuration;
@@ -171,14 +171,12 @@ void LeagueMemoryReader::ReadMissiles(MemSnapshot& ms) {
 
 	// Read objects from the pointers we just read
 	for (unsigned int i = 0; i < pSize; ++i) {
-
 		auto champObject = Mem::ReadDWORD(hProcess, pList + (0x8 * i));
 
 		std::shared_ptr<GameObject> obj;
 		obj = std::shared_ptr<GameObject>(new GameObject());
 		obj->LoadFromMem(champObject, hProcess, true);
 		ms.objectMap[obj->networkId] = obj;
-
 		if (obj->name.size() <= 2 || blacklistedObjectNames.find(obj->name) != blacklistedObjectNames.end())
 			blacklistedObjects.insert(obj->networkId);
 		else if (obj->spellInfo != GameData::UnknownSpell)
@@ -190,7 +188,7 @@ void LeagueMemoryReader::ReadMissiles(MemSnapshot& ms) {
 	readDuration = high_resolution_clock::now() - readTimeBegin;
 	ms.benchmark->readObjectsMs = readDuration.count();
 }
-*/
+
 void LeagueMemoryReader::ReadTurrets(MemSnapshot& ms) {
 	high_resolution_clock::time_point readTimeBegin;
 	duration<float, std::milli> readDuration;
@@ -236,7 +234,6 @@ void LeagueMemoryReader::ReadMinimap(MemSnapshot & snapshot) {
 void LeagueMemoryReader::FindPlayerChampion(MemSnapshot & snapshot) {
 	int netId = 0;
 	Mem::Read(hProcess, Mem::ReadDWORD(hProcess, moduleBaseAddr + Offsets::LocalPlayer) + Offsets::ObjNetworkID, &netId, sizeof(int));
-	
 	auto it = snapshot.objectMap.find(netId);
 	if (it != snapshot.objectMap.end())
 		snapshot.player = it->second;
@@ -255,25 +252,39 @@ void LeagueMemoryReader::ClearMissingObjects(MemSnapshot & ms) {
 	}
 }
 
-void LeagueMemoryReader::MakeSnapshot(MemSnapshot& ms) {
-	
-	Mem::Read(hProcess, moduleBaseAddr + Offsets::GameTime, &ms.gameTime, sizeof(float));
+void LeagueMemoryReader::GetMousePos(MemSnapshot& ms) {
+	// MousePos
+	auto Mouse = Mem::ReadDWORD(hProcess, moduleBaseAddr + Offsets::HudInstance);
+	auto Mouse1 = Mem::ReadDWORD(hProcess, Mouse + 0x28); // maybe 0x38 
+	Mem::Read(hProcess, Mouse1 + 0x20, &ms.mousePos.x, sizeof(float));
+	Mem::Read(hProcess, Mouse1 + 0x24, &ms.mousePos.y, sizeof(float));
+	Mem::Read(hProcess, Mouse1 + 0x28, &ms.mousePos.z, sizeof(float));
 
+	// Checking ping
+	DWORD64 pingInstance = Mem::ReadDWORD(hProcess, moduleBaseAddr + Offsets::Ping);
+	DWORD64 pingOff = Mem::ReadDWORD(hProcess, pingInstance + Offsets::OffPing);
+	Mem::Read(hProcess, pingOff + Offsets::ShowPing, &ms.ping, sizeof(int));
 	// Checking chat
 	DWORD64 chatInstance = Mem::ReadDWORD(hProcess, moduleBaseAddr + Offsets::Chat);
 	Mem::Read(hProcess, chatInstance + Offsets::ChatIsOpen, &ms.isChatOpen, sizeof(bool));
+}
+
+void LeagueMemoryReader::MakeSnapshot(MemSnapshot& ms) {
+	
+	Mem::Read(hProcess, moduleBaseAddr + Offsets::GameTime, &ms.gameTime, sizeof(float));
 
 	if (ms.gameTime > 2) {
 		ms.updatedThisFrame.clear();
 		ReadRenderer(ms);
 		ReadMinimap(ms);
-	    ReadChamps(ms);
+		ReadChamps(ms);
 		ReadMinions(ms);
-//		ReadMissiles(ms);
+		ReadMissiles(ms);
 		ReadTurrets(ms);
 		ClearMissingObjects(ms);
 		FindPlayerChampion(ms);
 		FindHoveredObject(ms);
+		GetMousePos(ms);
 
 		ms.map = std::shared_ptr<MapObject>(MapObject::Get(ms.turrets.size() > 10 ? SUMMONERS_RIFT : HOWLING_ABYSS));
 	}

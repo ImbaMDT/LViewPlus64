@@ -62,6 +62,7 @@ BOOST_PYTHON_MODULE(LViewPlus64) {
 		.def_readonly("slot",                   &Spell::slot)
 		.def_readonly("summoner_spell_type",    &Spell::summonerSpellType)
 		.def_readonly("level",                  &Spell::level)
+		.def_readonly("ammo",					&Spell::ammo)
 		.def_readonly("ready_at",               &Spell::readyAt)
 		.def_readonly("value",                  &Spell::value)
 		.def_readonly("timeCharge",             &Spell::timeCharge)
@@ -217,6 +218,7 @@ BOOST_PYTHON_MODULE(LViewPlus64) {
 		.def_readonly("player",             &PyGame::GetLocalChampion)
 		.def_readonly("time",               &PyGame::gameTime)
 		.def_readonly("isChatOpen",			&PyGame::isChatOpen)
+		.def_readonly("mousePos",			&PyGame::mousePos)
 		.def_readonly("ping",				&PyGame::ping)
 		.def_readonly("map",                &PyGame::GetMap)
 										    

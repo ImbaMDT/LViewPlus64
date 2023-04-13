@@ -90,6 +90,51 @@ bool GameObject::IsAllyTo(const GameObject& other) const {
 	return this->team == other.team;
 }
 
+uint64_t GameObject::get_ai_address(DWORD64 base, HANDLE hProcess, bool deepLoad) {
+
+	address = base;
+	uint8_t v1;
+	uint8_t v4;
+	unsigned char* v2;
+	uint64_t v7;
+	uint64_t v13;
+	uint64_t return_val;
+
+
+	//v1 is never zero if it is a champ
+	Mem::Read(hProcess, base + Offsets::AiManager, &v1, sizeof(uint8_t));
+	if (v1 == 0) {
+		return 0;
+	}
+
+	v2 = (unsigned char*)base + Offsets::AiManager - 8;
+	Mem::Read(hProcess, (DWORD64)v2 + 1, &v4, sizeof(uint8_t));
+	if (v4 == 0) {
+		return 0;
+	}
+	Mem::Read(hProcess, (DWORD64)v2 + 4, &v7, sizeof(int));
+	if (v7 == 0) {
+		return 0;
+	}
+	Mem::Read(hProcess, (DWORD64)v2 + (4 * v1 + 12), &v13, sizeof(int));
+	if (v13 == 0) {
+		return 0;
+	}
+	v13 ^= ~v7;
+	if (v13 <= 0 || (v13 >= 0x7FFFFFFF))
+	{
+		return 0;
+	}
+	Mem::Read(hProcess, v13 + 8, &return_val, sizeof(int));
+
+	if (return_val <= 0 || return_val >= 0x7FFFFFFF) {
+		return 0;
+	}
+	return return_val;
+}
+
+BYTE  GameObject::itemListBuffer[0x100] = {};
+
 void GameObject::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 
 	address = base;
@@ -106,7 +151,7 @@ void GameObject::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 	memcpy(&health,        &buff[Offsets::ObjHealth],        sizeof(float));
 	memcpy(&maxHealth,     &buff[Offsets::ObjMaxHealth],     sizeof(float));
 	memcpy(&mana,		   &buff[Offsets::ObjMana],			 sizeof(float));
-	memcpy(&maxMana,	   &buff[Offsets::ObjMaxMana], sizeof(float));
+	memcpy(&maxMana,	   &buff[Offsets::ObjMaxMana],		 sizeof(float));
 	memcpy(&baseAttack,    &buff[Offsets::ObjBaseAtk],       sizeof(float));
 	memcpy(&bonusAttack,   &buff[Offsets::ObjBonusAtk],      sizeof(float));
 	memcpy(&armour,        &buff[Offsets::ObjArmor],         sizeof(float));
@@ -117,22 +162,18 @@ void GameObject::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 	memcpy(&crit,          &buff[Offsets::ObjCrit],          sizeof(float));
 	memcpy(&critMulti,     &buff[Offsets::ObjCritMulti],     sizeof(float));
 	memcpy(&abilityPower,  &buff[Offsets::ObjAbilityPower],  sizeof(float));
-	memcpy(&isMoving,	   &buff[Offsets::ObjIsMoving], sizeof(bool));
+	memcpy(&isMoving,	   &buff[Offsets::ObjIsMoving],		 sizeof(bool));
 	memcpy(&atkSpeedMulti, &buff[Offsets::ObjAtkSpeedMulti], sizeof(float));
 	memcpy(&movementSpeed, &buff[Offsets::ObjMoveSpeed],     sizeof(float));
-	memcpy(&networkId,     &buff[Offsets::ObjNetworkID],     sizeof(DWORD));
+	memcpy(&networkId,     &buff[Offsets::ObjNetworkID],     sizeof(DWORD64));
 	memcpy(&isTargetable,  &buff[Offsets::ObjTargetable],	 sizeof(bool));
 	memcpy(&isInvulnerable,&buff[Offsets::ObjInvulnerable],  sizeof(bool));
 	memcpy(&isDirection,   &buff[Offsets::ObjDirection], 	 sizeof(bool));
 	memcpy(&isMoving,	   &buff[Offsets::ObjIsMoving], 	 sizeof(bool));
 	memcpy(&atkRange,      &buff[Offsets::ObjAtkRange],		 sizeof(float));
-	memcpy(&manaRegen, &buff[Offsets::ObjManaRegen], sizeof(float));
-	memcpy(&healthRegen, &buff[Offsets::ObjHealthRegen], sizeof(float));
-	memcpy(&isRecalling,   &buff[Offsets::ObjRecallState], sizeof(int));
-
-	/* 
-		AIManager removed! Make ur self.
-	*/
+	memcpy(&manaRegen,	   &buff[Offsets::ObjManaRegen],     sizeof(float));
+	memcpy(&healthRegen,   &buff[Offsets::ObjHealthRegen],	 sizeof(float));
+	memcpy(&isRecalling,   &buff[Offsets::ObjRecallState],	 sizeof(int));
 
 	// Check if alive
 	DWORD64 spawnCount;
@@ -161,6 +202,7 @@ void GameObject::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 		}
 		unitInfo = GameData::GetUnitInfoByName(name);
 	}
+
 /* doesnt work for now
 
 	// Don't use buffmanager for minions making lag idk ?
@@ -178,14 +220,34 @@ void GameObject::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 		LoadBuffFromMem(base, hProcess, deepLoad);
 		
 	*/
+
+	DWORD64 aiManagerAddress = get_ai_address(base, hProcess, deepLoad);
+
+	if (aiManagerAddress != 0) {
+		//		std::cout << aiManagerAddress << std::endl;
+		//		printf("0x%08x\n", aiManagerAddress);
+
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerStartPath, &ai_navBegin, sizeof(Vector3));
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerEndPath, &ai_navEnd, sizeof(Vector3));
+
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerIsMoving, &ai_isMoving, sizeof(bool));
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerIsDashing, &ai_isDashing, sizeof(bool));
+
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerDashSpeed, &ai_currentDashSpeed, sizeof(DWORD64));
+
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerTargetPosition, &currentTargetPosition, sizeof(DWORD64));
+		Mem::Read(hProcess, aiManagerAddress + Offsets::AiManagerCurrentSegment, &currentSegment, sizeof(DWORD64));
+
+		Mem::Read(hProcess, aiManagerAddress + Offsets::Velocity, &velocity, sizeof(float));
+		Mem::Read(hProcess, aiManagerAddress + Offsets::ServerPos, &serverPos, sizeof(Vector3));
+	}
 }
 
 DWORD64 GameObject::spellSlotPointerBuffer[7] = {};
-BYTE  GameObject::itemListBuffer[0x100] = {};
 
 void GameObject::LoadChampionFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 
-	memcpy(&spellSlotPointerBuffer, &buff[Offsets::ObjSpellBook], sizeof(DWORD) * 6);
+	memcpy(&spellSlotPointerBuffer, &buff[Offsets::ObjSpellBook], sizeof(DWORD64) * 6);
 
 	Q.LoadFromMem(spellSlotPointerBuffer[0], hProcess);
 	W.LoadFromMem(spellSlotPointerBuffer[1], hProcess);
@@ -203,7 +265,7 @@ void GameObject::LoadChampionFromMem(DWORD64 base, HANDLE hProcess, bool deepLoa
 		itemSlots[i].slot = i;
 
 		DWORD64 itemPtr = 0, itemInfoPtr = 0;
-		memcpy(&itemPtr, itemListBuffer + i * 0x10 + Offsets::ItemListItem, sizeof(DWORD));
+		memcpy(&itemPtr, itemListBuffer + i * 0x10 + Offsets::ItemListItem, sizeof(DWORD64));
 		if (itemPtr == 0)
 			continue;
 
@@ -234,7 +296,7 @@ void GameObject::LoadBuffFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 
 		DWORD64 buffInfo = Mem::ReadDWORDFromBuffer(buff, 0x8);
 
-		if (buffInfo == NULL || (DWORD)buffInfo <= 0x1000)
+		if (buffInfo == NULL || (DWORD64)buffInfo <= 0x1000)
 			continue;
 
 		char buffnamebuffer[240];

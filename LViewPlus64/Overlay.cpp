@@ -241,11 +241,12 @@ void Overlay::DrawScriptSettings(PyGame& state, MemSnapshot& memSnapshot)
 	if (ImGui::Button("Reload all addons")) {
 		GameStart(memSnapshot);
 	}
-
+/*
 	if (ImGui::CollapsingHeader("Zoom settings")) {
 		int amount = 10;
 		ImGui::SliderInt("Max zoom", &amount, 1000, 10000);
 	}
+*/
 
 	int idNode = 10000;
 	for (std::shared_ptr<Script>& script : scriptManager.activeScripts) {

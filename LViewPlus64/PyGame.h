@@ -21,6 +21,7 @@ public:
 	float                 gameTime;
 	bool				  isChatOpen;
 	int					  ping;
+	Vector3				  mousePos;
 					      
 	MapObject*            map;
 	GameObject*           hoveredObject;
@@ -319,6 +320,7 @@ public:
 		gs.gameTime = snapshot.gameTime;
 		gs.isChatOpen = snapshot.isChatOpen;
 		gs.ping = snapshot.ping;
+		gs.mousePos = snapshot.mousePos;
 		gs.hoveredObject = snapshot.hoveredObject.get();
 		gs.localChampion = snapshot.player.get();
 		gs.map = snapshot.map.get();

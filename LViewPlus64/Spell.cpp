@@ -53,11 +53,12 @@ void Spell::LoadFromMem(DWORD64 base, HANDLE hProcess, bool deepLoad) {
 
 	memcpy(&readyAt, buffer + Offsets::SpellSlotTime, sizeof(float));
 	memcpy(&level, buffer + Offsets::SpellSlotLevel, sizeof(int));
+	memcpy(&ammo, buffer + Offsets::SpellSlotAmmo, sizeof(int));
 	memcpy(&value, buffer + Offsets::SpellSlotDamage, sizeof(float));
 	memcpy(&timeCharge, buffer + Offsets::SpellSlotSmiteCharges, sizeof(int));
 
 	DWORD64 spellInfoPtr;
-	memcpy(&spellInfoPtr, buffer + Offsets::SpellSlotSpellInfo, sizeof(DWORD));
+	memcpy(&spellInfoPtr, buffer + Offsets::SpellSlotSpellInfo, sizeof(DWORD64));
 	
 	DWORD64 spellDataPtr = Mem::ReadDWORD(hProcess, spellInfoPtr + Offsets::SpellInfoSpellData);
 	DWORD64 spellNamePtr = Mem::ReadDWORD(hProcess, spellDataPtr + Offsets::SpellDataSpellName);
