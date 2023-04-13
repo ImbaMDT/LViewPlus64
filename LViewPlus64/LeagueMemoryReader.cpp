@@ -109,7 +109,7 @@ void LeagueMemoryReader::ReadChamps(MemSnapshot& ms) {
 		obj->LoadFromMem(champObject, hProcess, true);
 		ms.objectMap[obj->networkId] = obj;
 
-		if (obj->name.size() <= 2 || blacklistedObjectNames.find(obj->name) != blacklistedObjectNames.end())
+		if ((obj->name.size() <= 2 && obj->name != "vi") || blacklistedObjectNames.find(obj->name) != blacklistedObjectNames.end())
 			blacklistedObjects.insert(obj->networkId);
 //		else if (obj->HasUnitTags(Unit_Champion) && obj->level > 0) Level offset wrong
 		else if (obj->HasUnitTags(Unit_Champion))
